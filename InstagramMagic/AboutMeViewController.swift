@@ -19,7 +19,7 @@ extension ViewController {
         let title = NSAttributedString(string: NSLocalizedString("aboutme.title", comment: ""), attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 24), NSAttributedStringKey.paragraphStyle: paragraphStyle])
         
         let lineOne = NSAttributedString(string: NSLocalizedString("aboutme.subtitle", comment: ""), attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 18), NSAttributedStringKey.paragraphStyle: paragraphStyle])
-        let lineTwo = NSAttributedString(string: NSLocalizedString("aboutme.instagram", comment: ""), attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 18), NSAttributedStringKey.foregroundColor: UIColor(red: 0.46, green: 0.8, blue: 1.0, alpha: 1.0), NSAttributedStringKey.paragraphStyle: paragraphStyle])
+        let lineTwo = NSAttributedString(string: NSLocalizedString("aboutme.github", comment: ""), attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 18), NSAttributedStringKey.foregroundColor: UIColor(red: 0.46, green: 0.8, blue: 1.0, alpha: 1.0), NSAttributedStringKey.paragraphStyle: paragraphStyle])
         
         
         let button = CNPPopupButton.init(frame: CGRect(x: 0, y: 0, width: 200, height: 60))
@@ -45,10 +45,28 @@ extension ViewController {
         let imageView = UIImageView.init(image: UIImage.init(named: "yang"))
         //计算图片的长宽比
         imageView.bounds = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width - 200, height: (UIScreen.main.bounds.width - 200) * 1440.0 / 1080.0)
+        imageView.isUserInteractionEnabled = true
+        let baiPhotoTapGestureRecognizer = UITapGestureRecognizer { (sender) in
+            if UIApplication.shared.canOpenURL(URL(string: "instagram://user?username=sailormoon__11")!) {
+                UIApplication.shared.openURL(URL(string: "instagram://user?username=sailormoon__11")!)
+            }else{
+                if UIApplication.shared.canOpenURL(URL(string: "https://www.instagram.com/sailormoon__11/")!) {
+                    UIApplication.shared.openURL(URL(string: "https://www.instagram.com/sailormoon__11/")!)
+                }
+            }
+        }
+        imageView.addGestureRecognizer(baiPhotoTapGestureRecognizer)
         
         let lineTwoLabel = UILabel()
         lineTwoLabel.numberOfLines = 0;
         lineTwoLabel.attributedText = lineTwo;
+        lineTwoLabel.isUserInteractionEnabled = true
+        let githubTapGestureRecognizer = UITapGestureRecognizer { (sender) in
+            if UIApplication.shared.canOpenURL(URL(string: "https://github.com/JerrySir/InstagramMagic")!) {
+                UIApplication.shared.openURL(URL(string: "https://github.com/JerrySir/InstagramMagic")!)
+            }
+        }
+        lineTwoLabel.addGestureRecognizer(githubTapGestureRecognizer)
         
         let popupController = CNPPopupController(contents:[titleLabel, lineOneLabel, imageView, lineTwoLabel, button])
         popupController.theme = CNPPopupTheme.default()

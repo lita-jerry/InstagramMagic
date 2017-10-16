@@ -21,5 +21,5 @@ CFBundleDisplayName = "Instagram魔术手";
 
 "aboutme.title" = "永久免费！永久无广告！";
 "aboutme.subtitle" = "最好的作品，送给最美的你";
-"aboutme.instagram" = "本APP已开源,并遵循MIT开源协议,如有版权侵犯,请在GitHub中Issue";
+"aboutme.github" = "本APP已开源,并遵循MIT开源协议,如有版权侵犯,请在GitHub中Issue";
 "aboutme.suggest" = "评价或建议";
