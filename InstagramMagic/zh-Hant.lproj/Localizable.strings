@@ -1,0 +1,25 @@
+/* 
+  Localizable.strings
+  InstagramMagic
+
+  Created by Jerry on 2017/10/16.
+  Copyright © 2017年 Jerry. All rights reserved.
+*/
+CFBundleDisplayName = "Instagram魔術手";
+"APPTitle" = "Instagram魔術手";
+"noInstagramLinkTitle" = "非正確Instagram鏈接";
+"noInstagramLinkSubTitle" = "Instagram中復制鏈接，再來本APP中刷新";
+"saveToPhoto" = "保存到相冊";
+"imgDownloading" = "圖片下載中";
+"videoDownloading" = "視頻下載中";
+"savedSuccessfully" = "保存成功";
+"saveFailed" = "保存失敗";
+
+"help.1" = "1, Instagram APP中瀏覽";
+"help.2" = "2, 點擊屏幕右上角按鈕, 選擇複製鏈接";
+"help.3" = "3, 回到本APP中刷新";
+
+"aboutme.title" = "永久免費！永久無廣告！";
+"aboutme.subtitle" = "最好的作品，送給最美的你";
+"aboutme.instagram" = "本APP已開源,並遵循MIT開源協議,如有版權侵犯,請在GitHub中Issue";
+"aboutme.suggest" = "評價或建議";
