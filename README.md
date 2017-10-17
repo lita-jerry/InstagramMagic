@@ -1,0 +1,2 @@
+# InstagramMagic
+Instagram download tool
