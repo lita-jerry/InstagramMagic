@@ -16,22 +16,20 @@ import MBProgressHUD
 import YYCategories
 import Photos
 import MJRefresh
+import SwiftyJSON
 
-class DataModel: NSObject {
-    var title: String?
-    var type: Int = -1 //0 GraphImage 单图, 1 GraphSidecar 图集, 2 GraphVideo 视频
-    
-    var imageGroup: [String] = []
-    
-    var video: String?
-    var videoDisplay: String?
+class DataModel2: NSObject {
+    var type: Int = 0 //1 图, 2 视频
+    var displayURL: String?
+    var videoURL: String?
 }
 
 class ViewController: FormViewController {
     
     let jsonRex = "<script.*?type=\"text/javascript\">window._sharedData.*?=(.*?);</script>"
     
-    var data: DataModel?
+    var instagramTitle: String?
+    var instagramData: [DataModel2] = []
     
     var popupController:CNPPopupController?
     
@@ -96,73 +94,42 @@ class ViewController: FormViewController {
                 jsonString = _jsonString! as String
                 
                 let jsonData:Data = jsonString.data(using: String.Encoding.utf8)!
-                
-                guard let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: .mutableContainers) else { return }
-                
-                let model = DataModel()
+
+                let json = JSON(data: jsonData)
                 
                 //获取title
-                guard let entry_data = (jsonDict as! NSDictionary)["entry_data"] as? NSDictionary else { return }
-                guard let PostPage = entry_data["PostPage"] as? [NSDictionary] else { return }
-                guard PostPage.count > 0 else { return }
-                guard let graphql = PostPage.first!["graphql"] as? NSDictionary else { return }
-                guard let shortcode_media = graphql["shortcode_media"] as? NSDictionary else { return }
-                guard let edge_media_to_caption = shortcode_media["edge_media_to_caption"] as? NSDictionary else { return }
-                guard let edges = edge_media_to_caption["edges"] as? [NSDictionary] else { return }
-                guard edges.count > 0 else { return }
-                guard let node = edges.first!["node"] as? NSDictionary else { return }
-                guard let text = node["text"] as? String else { return }
-                
-                model.title = text
-                
-                //判断图片还是视频
-                guard let type = shortcode_media["__typename"] as? String else{
-                    NSLog("获取类型失败")
-                    return
+                self.instagramTitle = json["entry_data", "PostPage", 0, "graphql", "shortcode_media", "edge_media_to_caption", "edges", 0, "node", "text"].string
+
+                //判断是否是集合
+                var groupJSON: [JSON] = []
+                if let _group = json["entry_data", "PostPage", 0, "graphql", "shortcode_media", "edge_sidecar_to_children", "edges"].array {
+                    NSLog("集合")
+                    groupJSON = _group.map({$0["node"]})
+                }else if json["entry_data", "PostPage", 0, "graphql", "shortcode_media"].dictionary != nil {
+                    NSLog("单")
+                    groupJSON.append(json["entry_data", "PostPage", 0, "graphql", "shortcode_media"])
                 }
                 
-                //单图
-                if (type == "GraphImage"){
-                    model.type = 0
-                    guard let imgURL = shortcode_media["display_url"] as? String else { return }
-                    model.imageGroup.append(imgURL)
-                    self.data = model
-                    self.reloadTableView()
-                    return
-                }
-                
-                //图集
-                if (type == "GraphSidecar"){
-                    model.type = 1
-                    guard let edge_sidecar_to_children = shortcode_media["edge_sidecar_to_children"] as? NSDictionary else { return }
-                    guard let edges2 = edge_sidecar_to_children["edges"] as? [NSDictionary] else { return }
-                    
-                    for _edges2 in edges2 {
-                        guard let node2 = _edges2["node"] as? NSDictionary else { return }
-                        guard let display_url = node2["display_url"] as? String else { return }
-                        model.imageGroup.append(display_url)
+                var _instagramData: [DataModel2] = []
+                for itm in groupJSON {
+                    let dm = DataModel2()
+                    dm.displayURL = itm["display_url"].string
+                    //图片
+                    if itm["__typename"].stringValue == "GraphImage" {
+                        dm.type = 1
+                        _instagramData.append(dm)
+                        continue
                     }
-                    self.data = model
-                    self.reloadTableView()
-                    return
+                    //视频
+                    if itm["__typename"].stringValue == "GraphVideo" {
+                        dm.type = 2
+                        dm.videoURL = itm["video_url"].string
+                        _instagramData.append(dm)
+                        continue
+                    }
                 }
-                
-                //视频
-                if (type == "GraphVideo"){
-                    model.type = 2
-                    
-                    guard let imgURL = shortcode_media["display_url"] as? String else { return }
-                    model.videoDisplay = imgURL
-                    //model.imageGroup.append(imgURL)
-                    
-                    guard let video_url = shortcode_media["video_url"] as? String else { return }
-                    model.video = video_url
-                    
-                    self.data = model
-                    self.reloadTableView()
-                    return
-                }
-                
+                self.instagramData = _instagramData
+                self.reloadTableView()
             }
         }
     }
@@ -189,21 +156,19 @@ class ViewController: FormViewController {
     
     private func reloadTableView() {
         
-        guard self.data != nil else { return }
-        
         form.removeAll()
         
-        form +++ Section(self.data?.title ?? "")
+        form +++ Section(self.instagramTitle ?? "")
         
-        //图片
-        if self.data!.type == 0 || self.data!.type == 1 {
-            for img in self.data!.imageGroup {
+        for itm in self.instagramData {
+            //图片
+            if itm.type == 1 {
                 form +++ Section()
                     <<< ImageRow(){
-                        $0.value = img
+                        $0.value = itm.displayURL
                         }.onCellSelection({ (cell, row) in
                             let vc = PhotoVC()
-                            vc.imageURL = img
+                            vc.imageURL = itm.displayURL
                             self.present(vc, animated: false, completion: nil)
                         })
                     
@@ -215,7 +180,7 @@ class ViewController: FormViewController {
                             hud.mode = .annularDeterminate
                             hud.label.text = NSLocalizedString("imgDownloading", comment: "图片下载中")
                             
-                            Alamofire.request(img).responseData { response in
+                            Alamofire.request(itm.displayURL ?? "").responseData { response in
                                 
                                 if let data = response.result.value {
                                     guard let image = UIImage(data: data) else {
@@ -245,69 +210,75 @@ class ViewController: FormViewController {
                             cell.textLabel?.textColor = UIColor(red: 12/255.0, green: 150/255.0, blue: 219/255.0, alpha: 1)
                         })
             }
-        }
-        
-        //视频
-        if self.data!.type == 2 {
-            form +++ Section()
-                <<< VideoRow(){
-                    $0.value = self.data!.videoDisplay
-                    }.onCellSelection({ (cell, row) in
-                        let videoURL = URL(string: self.data!.video!)!
-                        let player = AVPlayer(url: videoURL)
-                        let playerVC = AVPlayerViewController()
-                        playerVC.player = player
-                        self.present(playerVC, animated: true) {
-                            playerVC.player?.play()
-                        }
-                    })
             
-            form +++ Section()
-                <<< ButtonRow(){
-                    $0.title = NSLocalizedString("saveToPhoto", comment: "保存到相册")
-                    }.onCellSelection({ (cell, row) in
-                        
-                        
-                        let hud = MBProgressHUD.showAdded(to: self.navigationController!.view, animated: true)
-                        hud.mode = .annularDeterminate
-                        hud.label.text = NSLocalizedString("videoDownloading", comment: "视频下载中")
-                        
-                        Alamofire.request(self.data!.video!).responseData { response in
-                            hud.hide(animated: true)
-                            guard let data = response.result.value else { return }
-                            
-                            let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0];
-                            let filePath = "\(documentsPath)/tempFile.mp4"
-                            
-                            do {
-                                try data.write(to: URL(fileURLWithPath: filePath))
+            //视频
+            if itm.type == 2 {
+                form +++ Section()
+                    <<< VideoRow(){
+                        $0.value = itm.displayURL
+                        }.onCellSelection({ (cell, row) in
+                            let videoURL = URL(string: itm.videoURL ?? "")!
+                            let player = AVPlayer(url: videoURL)
+                            let playerVC = AVPlayerViewController()
+                            playerVC.player = player
+                            self.present(playerVC, animated: true) {
+                                playerVC.player?.play()
                             }
-                            catch {
-                                print("写入数据错误")
-                                return
-                            }
+                        })
+                    //下载视频按钮
+                    <<< ButtonRow(){
+                        $0.title = NSLocalizedString("saveToPhoto", comment: "保存到相册")
+                        }.onCellSelection({ (cell, row) in
                             
-                            PHPhotoLibrary.requestAuthorization
-                                { (status) -> Void in
-                                    switch (status)
-                                    {
-                                    case .authorized:
-                                        // Permission Granted
-                                        print("Write your code here")
-                                        self.saveVideo(path: filePath)
-                                    case .denied:
-                                        // Permission Denied
-                                        print("User denied")
-                                    default:
-                                        print("Restricted")
+                            
+                            let hud = MBProgressHUD.showAdded(to: self.navigationController!.view, animated: true)
+                            hud.mode = .annularDeterminate
+                            hud.label.text = NSLocalizedString("videoDownloading", comment: "视频下载中")
+                            
+                            Alamofire.request(itm.videoURL ?? "").responseData { response in
+                                hud.hide(animated: true)
+                                guard let data = response.result.value else { return }
+                                
+                                let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0];
+                                let filePath = "\(documentsPath)/tempFile.mp4"
+                                
+                                do {
+                                    try data.write(to: URL(fileURLWithPath: filePath))
+                                }
+                                catch {
+                                    print("写入数据错误")
+                                    return
+                                }
+                                
+                                PHPhotoLibrary.requestAuthorization
+                                    { (status) -> Void in
+                                        switch (status)
+                                        {
+                                        case .authorized:
+                                            // Permission Granted
+                                            print("Write your code here")
+                                            self.saveVideo(path: filePath)
+                                        case .denied:
+                                            // Permission Denied
+                                            print("User denied")
+                                        default:
+                                            print("Restricted")
+                                        }
                                     }
-                            }
-                            }
-                            .downloadProgress { progress in
-                                print("Download Progress: \(progress.fractionCompleted)")
-                                hud.progress = Float(progress.fractionCompleted)
+                                }
+                                .downloadProgress { progress in
+                                    print("Download Progress: \(progress.fractionCompleted)")
+                                    hud.progress = Float(progress.fractionCompleted)
+                                }
+                        })
+                        .cellSetup { cell, row in
+                            cell.imageView?.image = UIImage(named: "download_image")
                         }
-                    })
+                        .cellUpdate({ (cell, row) in
+                            cell.textLabel?.textAlignment = .left
+                            cell.textLabel?.textColor = UIColor(red: 12/255.0, green: 150/255.0, blue: 219/255.0, alpha: 1)
+                        })
+            }
         }
     }
     

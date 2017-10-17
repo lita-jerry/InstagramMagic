@@ -12,6 +12,6 @@ target 'InstagramMagic' do
   pod 'MJRefresh'
   pod 'SnapKit', '~> 4.0.0'
   pod 'YYCategories'
-  #pod 'SwiftyJSON'
+  pod 'SwiftyJSON'
 
 end
