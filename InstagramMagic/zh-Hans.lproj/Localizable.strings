@@ -1,0 +1,25 @@
+/* 
+  Localizable.strings
+  InstagramMagic
+
+  Created by Jerry on 2017/10/16.
+  Copyright © 2017年 Jerry. All rights reserved.
+*/
+
+"APPTitle" = "爱柏杨爱生活";
+"noInstagramLinkTitle" = "非正确Instagram链接";
+"noInstagramLinkSubTitle" = "Instagram中复制链接，再来本APP中刷新";
+"saveToPhoto" = "保存到相册";
+"imgDownloading" = "图片下载中";
+"videoDownloading" = "视频下载中";
+"savedSuccessfully" = "保存成功";
+"saveFailed" = "保存失败";
+
+"help.1" = "1, Instagram APP中浏览";
+"help.2" = "2, 点击屏幕右上角按钮, 选择复制链接";
+"help.3" = "3, 回到本APP中刷新";
+
+"aboutme.title" = "永久免费！永久无广告！";
+"aboutme.subtitle" = "最好的作品，送给最美的你";
+"aboutme.github" = "本APP已开源,并遵循MIT开源协议,如有版权侵犯,请在GitHub中Issue";
+"aboutme.suggest" = "评价或建议";

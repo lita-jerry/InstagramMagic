@@ -1,0 +1,25 @@
+/* 
+  Localizable.strings
+  InstagramMagic
+
+  Created by Jerry on 2017/10/16.
+  Copyright © 2017年 Jerry. All rights reserved.
+*/
+
+"APPTitle" = "爱柏杨爱生活";
+"noInstagramLinkTitle" = "It's not Instagram's link";
+"noInstagramLinkSubTitle" = "In the Instagram's APP to copy link, and go back this app to refresh";
+"saveToPhoto" = "Save to photo library";
+"imgDownloading" = "Photo is downloading";
+"videoDownloading" = "Video is downloading";
+"savedSuccessfully" = "Saved successfully";
+"saveFailed" = "Save failed";
+
+"help.1" = "1, browse in Instagram";
+"help.2" = "2, Click the button at the top right of the screen to select the copylink";
+"help.3" = "3, go back this app to refresh";
+
+"aboutme.title" = "Forever free! Forever NO AD!";
+"aboutme.subtitle" = "Best works for the most beautiful you.";
+"aboutme.github" = "The APP has been open source, and follow the MIT open source agreement, if copyright infringement, please submit Issue in GitHub.";
+"aboutme.suggest" = "Write a Review";
